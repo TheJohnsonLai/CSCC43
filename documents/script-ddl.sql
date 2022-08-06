@@ -141,6 +141,10 @@ insert into booking values (2,1004,'2022-8-10','2022-9-10',"no");
 insert into booking values (3,1004,'2022-9-11','2022-9-28',"no");
 insert into booking values (6,1007,'2022-8-11','2022-12-30',"no");
 insert into booking values (7,1009,'2023-1-6','2023-3-6',"no");
+insert into booking values (6,1007,'2022-8-11','2022-12-30',"yes");
+insert into booking values (7,1009,'2023-1-6','2023-3-6',"yes");
+insert into booking values (9,1000,'2022-9-2','2022-11-11',"yes");
+insert into booking values (10,1002,'2022-10-10','2022-10-12',"yes");
 
 insert into ownership values (1111,1);
 insert into ownership values (1111,2);
