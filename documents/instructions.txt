@@ -1,0 +1,5 @@
+1. Create database in mysql.
+2. Create tables and populate data with some schema? Have this schema saved.
+3. Install mysql connector J and placed the unzipped folder somewhere
+4. in Eclipse, Proj property, external ZIP classpath add the connJ
+5. Run As -> on bnbGUI and look at Console for rest.
