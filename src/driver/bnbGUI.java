@@ -23,14 +23,15 @@ public class bnbGUI {
   public static String MenuMain() {
     return ("\n\n--- MAIN MENU ---\n[1] View Listings\n[2] Create Listing\n[3] Update "
         + "Listing (Host)\n[4] Delete Listing (Host)\n[5] New Booking (Renter)\n[6] Delete Booking "
-        + "\n[7] Write Review \n[8] Reports \n[9] Database Tables \n[0] Back to Login \n");
+        + "\n[7] Write a Review or Comment"
+        + "\n[8] Reports \n[9] Database Tables \n[0] Back to Login \n");
   }
 
   // View Menu
   public static String MenuView() {
     return ("\n--- VIEW MENU ---\n[1] View Listings DB \n[2] View Users DB \n"
         + "[3] View Reviews DB \n[4] View Calendar DB \n[5] View Renter History DB \n"
-        + "[6] View Host's Listings DB \n[7] View House History DB \n"
+        + "[6] View Host's Listings DB \n[7] View House History DB \n[8] View Listing Comments\n"
         + "[0] Back to Main menu \n");
   }
 
@@ -41,7 +42,7 @@ public class bnbGUI {
         + "[3] Total listings per country \n[4] Total listings per country & city \n"
         + "[5] Total listings per country, city & postal code \n"
         + "[6] Host rank by listings per country \n[7] Host rank by city \n"
-        + "[8] Hosts with >10% listings by city \n [9] Hosts with >10% listings by country \n"
+        + "[8] Hosts with >10% listings by city \n[9] Hosts with >10% listings by country \n"
         + "[10] Renter bookings rank \n" + "[11] Renter bookings rank per cities (2+ bookings) \n"
         + "[12] Largest cancellations \n"
         + "[13] Nouns popular on listings\n[0] Back to Main menu \n");
@@ -193,9 +194,9 @@ public class bnbGUI {
             try {
               sql = "DELETE FROM USER WHERE SIN LIKE " + userInput + ";";
               if (stmt.executeUpdate(sql) == 0) {
-                System.out.print("No such user.");
+                System.out.println("No such user.");
               } else {
-                System.out.print("Successfully purged.");
+                System.out.println("Successfully purged.");
               }
             } catch (SQLException se) {
               System.out.println("User does not exist.");
@@ -386,37 +387,42 @@ public class bnbGUI {
             System.out.println("Format: #, Type, Long, Lat, Addr, Postal, City, Country");
             sql = "SELECT * FROM LISTINGS;";
             rs = stmt.executeQuery(sql);
-            System.out.print(outputRS(rs));
+            System.out.println(outputRS(rs));
           } else if (userInput.equals("2")) { // USERS
             System.out.println("Format: SIN, name, job, address, birthdate");
             sql = "SELECT * FROM USERS;";
             rs = stmt.executeQuery(sql);
-            System.out.print(outputRS(rs));
+            System.out.println(outputRS(rs));
           } else if (userInput.equals("3")) { // Reviews
             System.out.println("Format: Reviewer, Reviewee, STARS, Comment");
             sql = "SELECT reviewer, reviewee, rating, comment FROM Reviews;";
             rs = stmt.executeQuery(sql);
-            System.out.print(outputRS(rs));
+            System.out.println(outputRS(rs));
           } else if (userInput.equals("4")) { // Calendar
             System.out.println("Format: Listing #, Owner SIN, Start, End, Price");
             sql = "SELECT * FROM CALENDAR;";
             rs = stmt.executeQuery(sql);
-            System.out.print(outputRS(rs));
+            System.out.println(outputRS(rs));
           } else if (userInput.equals("5")) { // Rent History
             System.out.println("Format: Renter SIN, Listing #, Booking time");
             sql = "SELECT * FROM RENTER_HISTORY;";
             rs = stmt.executeQuery(sql);
-            System.out.print(outputRS(rs));
+            System.out.println(outputRS(rs));
           } else if (userInput.equals("6")) { // Host Ownership
             System.out.println("Format: Owner SIN, Listing #");
             sql = "SELECT * FROM OWNERSHIP;";
             rs = stmt.executeQuery(sql);
-            System.out.print(outputRS(rs));
+            System.out.println(outputRS(rs));
           } else if (userInput.equals("7")) { // House History
             System.out.println("Format: Listing #, Renter SIN");
             sql = "SELECT * FROM HOUSE_HISTORY;";
             rs = stmt.executeQuery(sql);
-            System.out.print(outputRS(rs));
+            System.out.println(outputRS(rs));
+          } else if (userInput.equals("8")) { // Listing Comments
+            System.out.println("Format: Listing #, Comment");
+            sql = "SELECT * FROM LISTING_COMMENTS;";
+            rs = stmt.executeQuery(sql);
+            System.out.println(outputRS(rs));
           }
         } catch (SQLException se) {
           System.out.println(se);
@@ -438,7 +444,7 @@ public class bnbGUI {
       userInput = sc.nextLine();
 
       try {
-        if (userInput.equalsIgnoreCase("exit")) { // Exit Case
+        if (userInput.equalsIgnoreCase("exit")) { // Exit Console
           consoleOn = false;
           break;
         } else if (userInput.equals("1")) {
@@ -551,6 +557,8 @@ public class bnbGUI {
           String listlong = sc.nextLine();
           System.out.print("Latitude? ");
           String listlat = sc.nextLine();
+          System.out.print("Address? ");
+          String listAddr = sc.nextLine();
           System.out.print("Postal Code? ");
           String listpost = sc.nextLine();
           System.out.print("City? ");
@@ -560,9 +568,10 @@ public class bnbGUI {
 
           try {
             sql = "INSERT INTO LISTINGS VALUES (" + listno + ",'" + listtype + "','" + listlong
-                + "','" + listlat + "','" + listpost + "','" + listcity + "','" + listcn + "');";
+                + "','" + listlat + "','" + listAddr + "','" + listpost + "','" + listcity + "','"
+                + listcn + "');";
             stmt.executeUpdate(sql);
-            sql = "INSERT INTO OWNERSHIP VALUES (" + listno + "," + userSIN + ");";
+            sql = "INSERT INTO OWNERSHIP VALUES (" + userSIN + "," + listno + ");";
             stmt.executeUpdate(sql);
           } catch (SQLException se) {
             System.out.println(se);
@@ -572,59 +581,75 @@ public class bnbGUI {
           System.out.println("Host Toolkit for MyBnB:");
           System.out.println(
               "What amenities does this place have? For the following, 1 = Yes, other = No.");
-          System.out.print("Does it have air conditioning?");
+          System.out.print("Does it have air conditioning? ");
           String amenA = sc.nextLine();
-          System.out.print("Does it have heat?");
+          System.out.print("Does it have heat? ");
           String amenH = sc.nextLine();
-          System.out.print("Is it beside a lake?");
+          System.out.print("Is it beside a lake? ");
           String amenL = sc.nextLine();
-          System.out.print("Are pets allowed?");
+          System.out.print("Are pets allowed? ");
           String amenP = sc.nextLine();
-          System.out.print("Does it supply internet?");
+          System.out.print("Does it supply internet? ");
           String amenI = sc.nextLine();
 
-          System.out.print("Calculating amenities.. ");
+          System.out.println("Calculating amenities.. ");
           int amenCalculation = 0;
-          String[] amenResponse = {};
+          String[] amenResponse = {"0", "0", "0", "0", "0"};
           int arSize = 0;
           if (!amenA.equals("1")) {
             amenCalculation += 100;
-            arSize++;
             amenResponse[arSize] = "Air Conditioning";
+            arSize++;
           }
           if (!amenH.equals("1")) {
             amenCalculation += 105;
-            arSize++;
             amenResponse[arSize] = "Heat";
+            arSize++;
           }
           if (!amenL.equals("1")) {
             amenCalculation += 300;
-            arSize++;
             amenResponse[arSize] = "Lake";
+            arSize++;
           }
           if (!amenP.equals("1")) {
             amenCalculation += 75;
-            arSize++;
             amenResponse[arSize] = "Pets";
+            arSize++;
           }
           if (!amenI.equals("1")) {
             amenCalculation += 60;
-            arSize++;
             amenResponse[arSize] = "Internet";
+            arSize++;
           }
+          sql = "INSERT INTO AMENITIES VALUES (" + listno + "," + amenA + "," + amenH + "," + amenL
+              + "," + amenP + "," + amenI + ");";
+          stmt.executeUpdate(sql);
           System.out.println("With these amenities: ");
           for (int i = 0; i < arSize; i++) {
-            System.out.println("[" + (i + 1) + "]" + amenResponse[i]);
+            System.out.println("[" + (i + 1) + "] " + amenResponse[i]);
           }
           System.out.println("You could be earning $" + amenCalculation + " more.");
 
           System.out
-              .print("Would you like to place the listing on the market? (y = Yes, other = No)");
+              .print("Would you like to place the listing on the market? (1 = Yes, other = No): ");
           userInput = sc.nextLine();
-          if (userInput.equalsIgnoreCase("y")) {
-            sql = "SELECT AVERAGE(PRICE) FROM CALENDAR;";
+          if (userInput.equalsIgnoreCase("1")) {
+            sql = "SELECT FORMAT(AVG(PRICE), 'N2') FROM CALENDAR;";
+            String recPrice = outputRS(stmt.executeQuery(sql));
+            System.out.println("The average listing price for this area is: $" + recPrice);
+            System.out.print("Start Date? (YYYY-MM-DD): ");
+            String lists = sc.nextLine();
+            System.out.print("End Date? (YYYY-MM-DD): ");
+            String liste = sc.nextLine();
+            System.out.print("Price? ");
+            String price = sc.nextLine();
+            sql = "INSERT INTO CALENDAR VALUES (" + listno + "," + userSIN + ",'" + lists + "','"
+                + liste + "'," + price + ");";
+            stmt.executeUpdate(sql);
           }
+          System.out.println("Operation completed. ");
 
+          // ---------------------------------- Update Listing -------------------------------------
         } else if (userInput.equals("3")) {
 
           // Update Listings
@@ -633,46 +658,57 @@ public class bnbGUI {
           System.out.print("Enter the listing number: ");
           String listno = sc.nextLine();
 
-          sql = "SELECT LISTNO FROM CALENDAR WHERE OWNER_SIN = " + userSIN + ";";
+          sql = "SELECT LISTNO FROM OWNERSHIP WHERE SIN = " + userSIN + ";";
           rs = stmt.executeQuery(sql);
           if (!outputRS(rs).equals(listno)) {
             System.out.println("Unfortunately, you do not own this listing.");
-            break;
-          }
+          } else {
 
-          // Date Change
+            // Date Change
 
-          System.out.print("Would you like to change the listing dates? (1 = yes, other = no) :");
-          userInput = sc.nextLine();
-          if (userInput.equals("1")) {
-            System.out.print("Set new listing days.\nStart Date (YYYY-MM-DD): ");
-            String lists = sc.nextLine();
-            System.out.print("End Date: ");
-            String liste = sc.nextLine();
-
-            sql = "SELECT LISTNO FROM BOOKING WHERE ((DATE_END <= '" + lists
-                + "') OR (DATE_START >= '" + liste + "')) AND LISTNO = " + listno + ";";
-            rs = stmt.executeQuery(sql);
-            if (!outputRS(rs).equals(listno)) {
-              System.out.println("Unfortunately, this listing cannot be updated.");
-              break;
-            }
-            sql = "UPDATE CALENDAR SET DATE_START = '" + lists + "', DATE_END = '" + liste
-                + "' WHERE LISTNO = " + listno + ";";
-            stmt.executeUpdate(sql);
-          }
-
-          // Price Change
-
-          System.out.print("Would you like to change the price? (1 = yes, other = no) :");
-          userInput = sc.nextLine();
-          if (userInput.equals("1")) {
-            System.out.print("Enter a new price: ");
+            System.out.print("Would you like to change the listing dates? (1 = yes, other = no): ");
             userInput = sc.nextLine();
-            sql = "UPDATE CALENDAR SET PRICE = " + userInput + ", WHERE LISTNO = " + listno + ";";
-            stmt.executeUpdate(sql);
-          }
+            if (userInput.equals("1")) {
+              System.out.print("Set new listing days.\nStart Date (YYYY-MM-DD): ");
+              String lists = sc.nextLine();
+              System.out.print("End Date (YYYY-MM-DD): ");
+              String liste = sc.nextLine();
 
+              sql = "SELECT LISTNO FROM BOOKING WHERE ((DATE_END <= '" + lists
+                  + "') OR (DATE_START >= '" + liste + "')) AND LISTNO = " + listno + ";";
+              rs = stmt.executeQuery(sql);
+              if (outputRS(rs).equals(listno)) {
+                System.out.println("Unfortunately, this listing cannot be updated.");
+              } else {
+                sql = "SELECT LISTNO FROM CALENDAR";
+                // If there is space available, insert a new availability date.
+                if (!outputRS(stmt.executeQuery(sql)).equals("")) {
+                  System.out.print("Enter a new price: ");
+                  userInput = sc.nextLine();
+                  sql = "INSERT INTO CALENDAR VALUES(" + listno + "," + userSIN + ",'" + lists
+                      + "','" + liste + "'," + userInput + ");";
+                  stmt.executeUpdate(sql);
+                } else { // Otherwise update the calendar
+                  sql = "UPDATE CALENDAR SET DATE_START = '" + lists + "', DATE_END = '" + liste
+                      + "' WHERE LISTNO = " + listno + ";";
+                  stmt.executeUpdate(sql);
+
+                  // Price Change
+
+                  System.out.print("Would you like to change the price? (1 = yes, other = no): ");
+                  userInput = sc.nextLine();
+                  if (userInput.equals("1")) {
+                    System.out.print("Enter a new price: ");
+                    userInput = sc.nextLine();
+                    sql = "UPDATE CALENDAR SET PRICE = " + userInput + " WHERE LISTNO = " + listno
+                        + ";";
+                    stmt.executeUpdate(sql);
+                  }
+                }
+              }
+            }
+            System.out.println("Listing updated.");
+          }
 
         } else if (userInput.equals("4")) {
 
@@ -687,6 +723,12 @@ public class bnbGUI {
             System.out.println("Only the owner can delete the listing.");
             break;
           }
+
+          sql = "SELECT LISTNO FROM BOOKING WHERE LISTNO = " + CanDeleteListNumber + ";";
+          if (!outputRS(stmt.executeQuery(sql)).equals("")) {
+            System.out.println("You cannot remove a listing if it has been booked.");
+            break;
+          }
           sql = "DELETE FROM LISTINGS WHERE LISTNO = " + CanDeleteListNumber + ";";
           int success = stmt.executeUpdate(sql);
           if (success != 0) {
@@ -694,6 +736,13 @@ public class bnbGUI {
           } else {
             System.out.println("Action failed.");
           }
+          sql = "DELETE FROM OWNERSHIP WHERE LISTNO = " + CanDeleteListNumber + " AND SIN = "
+              + userSIN + "; ";
+          success = stmt.executeUpdate(sql);
+          sql = "DELETE FROM CALENDAR WHERE LISTNO = " + CanDeleteListNumber + "; ";
+          success = stmt.executeUpdate(sql);
+          sql = "DELETE FROM AMENITIES WHERE LISTNO = " + CanDeleteListNumber + "; ";
+          success = stmt.executeUpdate(sql);
 
         } else if (userInput.equals("5")) {
 
@@ -710,7 +759,6 @@ public class bnbGUI {
             } else {
               System.out.print("Please enter your credit card number (4 digits): ");
               ccOnFile = sc.nextLine();
-              sql = "INSERT INTO RENTER VALUES (" + userSIN + "," + ccOnFile + ");";
             }
             System.out.print("You wish to book a BNB. What is the listing number? ");
             String listno = sc.nextLine();
@@ -727,9 +775,11 @@ public class bnbGUI {
                 + " DATE_START <= '" + lists + "' and DATE_END >= '" + liste + "';";
             rs = stmt.executeQuery(sql);
             if (outputRS(rs).equals(listno)) {
-              System.out.println("Your credit card is being charged.. ");
+              System.out.println("Your credit card is being charged!");
               sql = "INSERT INTO BOOKING VALUES (" + listno + "," + userSIN + ",'" + lists + "','"
                   + liste + "','no');";
+              stmt.executeUpdate(sql);
+              sql = "INSERT INTO RENTER VALUES (" + userSIN + "," + ccOnFile + ");";
               stmt.executeUpdate(sql);
               System.out.println("Thank you for booking a listing.");
             } else {
@@ -766,45 +816,58 @@ public class bnbGUI {
           // Create a review
 
           System.out.println("To create a review, answer the prompts. ");
-          System.out.print("I want to review a [1] BNB, [2] Renter, [3] Owner: ");
+          System.out.print(
+              "I want to review a [1] BNB, [2] Renter, [3] Owner, or [4] Comment on a BNB: ");
           String reviewType = sc.nextLine();
-          System.out.print("The SIN or Listing number is: ");
+          if (reviewType.equals("1") || reviewType.equals("4")) {
+            System.out.print("The Listing number is: ");
+          } else {
+            System.out.print("The SIN (Social Insurance Number) is: ");
+          }
           String reviewID = sc.nextLine();
-          System.out.print("STARS (1 to 5): ");
-          String reviewRate = sc.nextLine();
-          System.out.print("Comments? ");
+          String reviewRate = "1";
+          if (!reviewType.equals("4")) {
+            System.out.print("How many STARS would you rate? (1 to 5): ");
+            reviewRate = sc.nextLine();
+          }
+          System.out.print("Any comments? ");
           String reviewComment = sc.nextLine();
-          if (reviewType.equals("1") && userType == "r") { // Renter reviews house
-            sql = "select listno from renter_history where listno = " + reviewID + "and sin = "
-                + userSIN + ";";
-            if (outputRS(stmt.executeQuery(sql)) == "") {
+          if (reviewType.equals("1")) { // User reviews house
+            sql = "select rentedlistno from renter_history where rentedlistno = " + reviewID
+                + " and sin = " + userSIN + ";";
+            if (outputRS(stmt.executeQuery(sql)).equals("")) {
               System.out.println("You haven't rented this house before.");
-              break;
+            } else {
+              sql = "INSERT INTO REVIEWS VALUES (" + userSIN + "," + reviewID + "," + reviewRate
+                  + ",'" + reviewComment + "', \"BNB Review\");";
+              stmt.executeUpdate(sql);
             }
-            sql = "INSERT INTO REVIEWS VALUES (" + userSIN + "," + reviewID + "," + reviewRate
-                + ",'" + reviewComment + "', \"BNB Review\");";
-            stmt.executeUpdate(sql);
-          } else if (reviewType.equals("3") && userType == "r") { // Renter reviews Owner
+          } else if (reviewType.equals("3")) { // User reviews (Host)
             sql = "select ownership.sin from renter_history join ownership on ownership.listno "
-                + " = renter_history.listno " + " where renter_history.sin = " + userSIN
+                + " = renter_history.rentedlistno " + " where renter_history.sin = " + userSIN
                 + " and ownership.sin =" + reviewID + ";";
-            if (outputRS(stmt.executeQuery(sql)) == "") {
+            if (outputRS(stmt.executeQuery(sql)).equals("")) {
               System.out.println("You haven't rented from this owner.");
-              break;
+            } else {
+              sql = "INSERT INTO REVIEWS VALUES (" + userSIN + "," + reviewID + "," + reviewRate
+                  + ",'" + reviewComment + "', \"Host Review\");";
+              stmt.executeUpdate(sql);
             }
-            sql = "INSERT INTO REVIEWS VALUES (" + userSIN + "," + reviewID + "," + reviewRate
-                + ",'" + reviewComment + "', \"Host Review\");";
-            stmt.executeUpdate(sql);
-          } else if (reviewType.equals("2") && userType == "o") { // Owner reviews renter
+          } else if (reviewType.equals("2")) { // Owner reviews renter
             sql = "select house_history.sin from house_history join ownership on ownership.listno "
                 + " = house_history.listno where house_history.sin = " + reviewID
                 + " and ownership.sin =" + userSIN + ";";
-            if (outputRS(stmt.executeQuery(sql)) == "") {
+            if (outputRS(stmt.executeQuery(sql)).equals("")) {
               System.out.println("You haven't rented to this renter.");
-              break;
+            } else {
+              sql = "INSERT INTO REVIEWS VALUES (" + userSIN + "," + reviewID + "," + reviewRate
+                  + ",'" + reviewComment + "', \"Renter Review\");";
+              stmt.executeUpdate(sql);
             }
-            sql = "INSERT INTO REVIEWS VALUES (" + userSIN + "," + reviewID + "," + reviewRate
-                + ",'" + reviewComment + "', \"Renter Review\");";
+            // Listing Comment - separate from a review.
+            // Listing Comments have no restriction i.e. anyone can post a comment.
+          } else if (reviewType.equals("4")) {
+            sql = "INSERT INTO LISTING_COMMENTS VALUES(" + reviewID + ", '" + reviewComment + "');";
             stmt.executeUpdate(sql);
           } else {
             System.out.println("Invalid input, back to main menu.");
@@ -823,7 +886,7 @@ public class bnbGUI {
       } catch (SQLException se) {
         System.out.println(se);
       } catch (Exception e) {
-        System.out.println("Error in input, try again.");
+        System.out.println("Error in input, try again: " + e);
       }
 
     }
