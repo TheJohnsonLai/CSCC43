@@ -12,8 +12,9 @@ create table listings (
     primary key(listno)
 );
 create table listing_comments (
-	listno int primary key references listings(listno),
-    comments varchar(128) primary key default ""
+	listno int references listings(listno),
+    comments varchar(128) default "",
+    primary key (listno, comments)
 );
 CREATE table user (
 	sin int,
@@ -42,29 +43,32 @@ CREATE TABLE AMENITIES (
 	Internet int default 0   
 );
 CREATE TABLE CALENDAR (
-	listno int NOT NULL PRIMARY KEY REFERENCES LISTINGS(listno),
-    owner_SIN int references USER(SIN),
+	listno int NOT NULL REFERENCES LISTINGS(listno),
     Date_Start DATE,
     Date_End DATE,
     Price real,
-    CHECK (Date_Start < Date_End)
+    CHECK (Date_Start < Date_End),
+    PRIMARY KEY (listno, date_start, date_end)
 );
 Create table renter (
 	sin int not null primary key references user(sin),
     cc_no int
 );
 CREATE TABLE OWNERSHIP (
-	sin int primary key references user(sin),
-	listno int references listings(listno)
+	sin int references user(sin),
+	listno int references listings(listno),
+    primary key (sin, listno)
 );
 Create TABLE House_History (
-	listno int primary key references listings(listno),
-    sin int primary key references user(sin)
+	listno int references listings(listno),
+    sin int references user(sin),
+    primary key (listno, sin)
 );
 Create table Renter_History (
-	sin int primary key references user(sin),
+	sin int references user(sin),
     rentedlistno int references listings(listno),
-    ispast varchar(32) DEFAULT "Past"
+    ispast varchar(32) DEFAULT "Past",
+    primary key (sin, rentedlistno)
 );
 CREATE TABLE BOOKING (
 	listno int references listing(listno),
@@ -85,6 +89,9 @@ insert into listings values (8, "house", 17, 31, "1054 Rant Rd.",57500, "Texas",
 insert into listings values (9, "cottage", 26, 24, "202 Houston Wk.",61052, "Texas", "USA");
 insert into listings values (10, "bedroom", 23, 22, "888 Wentworth Ln.",59332, "Texas", "USA");
 insert into listings values (11, "duplex", 3, 22, "7 Yonge St.",12000, "Toronto", "Canada");
+insert into listings values (12, "mansion", -14, 0, "278 Herman Ln.",12000, "Calgary", "Canada");
+insert into listings values (13, "house", -15, 1, "12 Herman Ln.",12000, "Calgary", "Canada");
+insert into listings values (14, "apartment", -16, 1, "845 Herman Ln.",12000, "Calgary", "Canada");
 
 insert into listing_comments values (1, "An interesting shelf of books lay on the top floor. Lots and lots of books, books everywhere books could be.");
 insert into listing_comments values (1, "Curious amount of books. All kinds of books, maybe this used to be a library?");
@@ -111,14 +118,23 @@ insert into AMENITIES values (7, 0, 0, 1, 0, 0);
 insert into AMENITIES values (8, 1, 1, 0, 0, 1);
 insert into AMENITIES values (9, 1, 1, 1, 1, 1);
 insert into AMENITIES values (10, 1, 1, 1, 1, 1);
+insert into AMENITIES values (11, 0, 1, 1, 1, 1);
+insert into AMENITIES values (12, 1, 1, 1, 0, 1);
+insert into AMENITIES values (13, 1, 1, 0, 0, 1);
+insert into AMENITIES values (14, 1, 1, 0, 1, 0);
 
-insert into CALENDAR values (1,1111,"2022-1-1","2022-6-6",1673);
-insert into CALENDAR values (2,1111,"2021-1-1","2022-9-9",999);
-insert into CALENDAR values (3,1111,"2022-5-3","2022-12-30",600);
-insert into CALENDAR values (5,1111,"2022-2-15","2023-5-24",2000);
-insert into CALENDAR values (4,1005,"2021-11-16","2024-7-22",750);
-insert into CALENDAR values (9,1005,"2022-9-1","2023-1-1",750);
-insert into CALENDAR values (10,1005,"2022-8-1","2023-5-5",750);
+insert into CALENDAR values (1,"2022-1-1","2022-6-6",1673);
+insert into CALENDAR values (2,"2021-1-1","2022-9-9",999);
+insert into CALENDAR values (3,"2022-5-3","2022-12-30",600);
+insert into CALENDAR values (4,"2021-11-16","2024-7-22",750);
+insert into CALENDAR values (5,"2022-2-15","2023-5-24",2000);
+insert into CALENDAR values (6,"2022-12-31","2023-1-29",1100);
+insert into CALENDAR values (9,"2022-9-1","2023-1-1",750);
+insert into CALENDAR values (10,"2022-8-1","2023-1-20",980);
+insert into CALENDAR values (11,"2022-8-3","2023-2-19",1400);
+insert into CALENDAR values (12,"2022-8-4","2023-3-12",333);
+insert into CALENDAR values (13,"2022-8-5","2023-4-22",500);
+insert into CALENDAR values (14,"2022-8-6","2023-5-28",600);
 
 insert into booking values (4,1003,'2022-8-9','2022-10-9',"no");
 insert into booking values (2,1004,'2022-8-10','2022-9-10',"no");
@@ -129,10 +145,17 @@ insert into booking values (7,1009,'2023-1-6','2023-3-6',"no");
 insert into ownership values (1111,1);
 insert into ownership values (1111,2);
 insert into ownership values (1111,3);
-insert into ownership values (1111,5);
 insert into ownership values (1005,4);
-insert into ownership values (1005,9);
-insert into ownership values (1005,10);
+insert into ownership values (1111,5);
+insert into ownership values (1005,6);
+insert into ownership values (1005,7);
+insert into ownership values (1005,8);
+insert into ownership values (1111,9);
+insert into ownership values (1111,10);
+insert into ownership values (1005,11);
+insert into ownership values (1002,12);
+insert into ownership values (1001,13);
+insert into ownership values (1007,14);
 
 insert into House_History values (1,2222);
 insert into House_History values (1,1002);
