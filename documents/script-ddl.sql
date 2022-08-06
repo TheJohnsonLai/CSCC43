@@ -13,7 +13,7 @@ create table listings (
 );
 create table listing_comments (
 	listno int primary key references listings(listno),
-    comments varchar(128)
+    comments varchar(128) primary key default ""
 );
 CREATE table user (
 	sin int,
@@ -33,8 +33,6 @@ CREATE table REVIEWS (
     primary key(reviewer, reviewee),
     CHECK (rating <= 5 and rating >= 1)
 );
-insert into REVIEWS values (1009,1111, 3, "This landlord was alright, I guess.", "3");
-insert into REVIEWS values (1001,1005, 5,"Very nice and was helpful in lowering the rent cost.", "3");
 CREATE TABLE AMENITIES (
 	listno int NOT NULL PRIMARY KEY REFERENCES LISTINGS(listno),
     AC int default 0,
@@ -86,10 +84,11 @@ insert into listings values (7, "apartment", 25, 30, "575 Houston Wk.",62000, "T
 insert into listings values (8, "house", 17, 31, "1054 Rant Rd.",57500, "Texas", "USA");
 insert into listings values (9, "cottage", 26, 24, "202 Houston Wk.",61052, "Texas", "USA");
 insert into listings values (10, "bedroom", 23, 22, "888 Wentworth Ln.",59332, "Texas", "USA");
+insert into listings values (11, "duplex", 3, 22, "7 Yonge St.",12000, "Toronto", "Canada");
 
-insert into listing_comments values (2, "very colorful. colorful walls, colorful floors. that's what this house is.");
 insert into listing_comments values (1, "An interesting shelf of books lay on the top floor. Lots and lots of books, books everywhere books could be.");
 insert into listing_comments values (1, "Curious amount of books. All kinds of books, maybe this used to be a library?");
+insert into listing_comments values (2, "very colorful. colorful walls, colorful floors. that's what this house is.");
 
 insert into user values (1111,"John L", "politician", "22 Lane", "1990-10-30");
 insert into user values (1001,"Jason", "firefighter", "13 Lane", "1995-7-22");
@@ -169,3 +168,14 @@ insert into RENTER values (1006, 2626);
 insert into RENTER values (1007, 3737);
 insert into RENTER values (1008, 4848);
 insert into RENTER values (1009, 5959);
+
+insert into REVIEWS values (1009,1111, 3, "This landlord was alright, I guess.", "Host Review");
+insert into REVIEWS values (1001,1005, 5,"Very nice and was helpful in lowering the rent cost.", "Host Review");
+insert into REVIEWS values (1111, 2222, 4,"They kept my room clean, for the most part.", "Renter Review");
+insert into REVIEWS values (1003, 3, 5,"I enjoyed the garden. It had lots of flowers.","BNB Review");
+
+
+
+
+
+
