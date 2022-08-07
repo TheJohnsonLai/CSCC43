@@ -231,7 +231,7 @@ public class bnbGUI {
             String datee = sc.nextLine();
             sql = "SELECT City, COUNT(LISTNO) FROM BOOKING NATURAL JOIN LISTINGS "
                 + " WHERE DATE_START >= '" + dates + "' and DATE_END <= '" + datee + "' "
-                + " GROUP BY CITY, COUNTRY ORDER BY COUNt(LISTNO) DESC;";
+                + " AND CANCEL LIKE 'NO'" + " GROUP BY CITY, COUNTRY ORDER BY COUNt(LISTNO) DESC;";
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
           } else if (userInput.equals("2")) { // Bookings by City, PC
@@ -241,6 +241,7 @@ public class bnbGUI {
             String datee = sc.nextLine();
             sql = "SELECT CITY, POSTAL, COUNT(LISTNO) FROM BOOKING NATURAL JOIN LISTINGS "
                 + " WHERE DATE_START >= '" + dates + "' and DATE_END <= '" + datee + "'"
+                + " AND CANCEL LIKE 'NO'"
                 + " GROUP BY POSTAL, CITY, COUNTRY ORDER BY COUNt(LISTNO) DESC;";
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
@@ -286,7 +287,7 @@ public class bnbGUI {
                 + " from listings JOIN OWNERSHIP JOIN User"
                 + " where listings.listno = ownership.listno AND user.sin = ownership.sin "
                 + " GROUP BY country, city, ownership.sin "
-                + " HAVING (10 * COUNT(ownership.sin) > (select count(c.sin) "
+                + " HAVING (COUNT(ownership.sin) > 0.1* (select count(c.sin) "
                 + " from listings b natural JOIN ownership c "
                 + " where listings.country = b.country and listings.city = b.city "
                 + " group by b.country))"
@@ -299,7 +300,7 @@ public class bnbGUI {
                 + " from listings JOIN OWNERSHIP JOIN User"
                 + " where listings.listno = ownership.listno AND user.sin = ownership.sin "
                 + " GROUP BY country, ownership.sin "
-                + " HAVING (10 * COUNT(ownership.sin) > (select count(c.sin) "
+                + " HAVING (COUNT(ownership.sin) > 0.1 * (select count(c.sin) "
                 + " from listings b natural JOIN ownership c "
                 + " where listings.country = b.country group by b.country))"
                 + " ORDER BY COUNTRY ASC, COUNT(ownership.sin) DESC;";
@@ -335,7 +336,7 @@ public class bnbGUI {
             System.out.println(outputRS(rs));
           } else if (userInput.equals("12")) { // Most Cancels in Bookings (renters)
             System.out.println("Most cancellations by renters: ");
-            sql = "select uname, b.rentersin, count(b.rentersin) "
+            sql = "select uname,count(b.rentersin) "
                 + " from listings join (select * from booking where cancel like \"yes\") "
                 + " as b on listings.listno = b.listno join renter on renter.sin = b.rentersin "
                 + " join user on user.sin = renter.sin"
@@ -346,8 +347,7 @@ public class bnbGUI {
             // Host cancellations are determined by
             // how many times their listings have been cancelled.
             System.out.println("Most cancellations by hosts: "); // Host cancellations
-            sql = "select uname, ownership.sin, count(ownership.sin)"
-                + " from user natural join ownership "
+            sql = "select uname, count(ownership.sin)" + " from user natural join ownership "
                 + " join (select * from booking where cancel like \"yes\") "
                 + " as b on ownership.listno = b.listno where date_start >= \"2021-8-8\""
                 + " group by ownership.sin order by count(ownership.sin) desc;";
