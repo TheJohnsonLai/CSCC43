@@ -214,6 +214,7 @@ public class bnbGUI {
       }
 
       // Reports Menu -----------------------------------------------------------------------------
+
       while (reports) {
         System.out.print(MenuReports());
         System.out.print(promptUser());
@@ -224,19 +225,23 @@ public class bnbGUI {
             reports = false;
             break;
           } else if (userInput.equals("1")) { // Bookings by City
-            System.out.print("Enter a city: ");
-            String city = sc.nextLine();
-            sql = "SELECT COUNT(LISTNO) FROM BOOKING NATURAL JOIN LISTINGS WHERE CITY = '" + city
-                + "';";
+            System.out.print("Enter a start date (YYYY-MM-DD): ");
+            String dates = sc.nextLine();
+            System.out.print("Enter an end date (YYYY-MM-DD): ");
+            String datee = sc.nextLine();
+            sql = "SELECT City, COUNT(LISTNO) FROM BOOKING NATURAL JOIN LISTINGS "
+                + " WHERE DATE_START >= '" + dates + "' and DATE_END <= '" + datee + "' "
+                + " GROUP BY CITY, COUNTRY ORDER BY COUNt(LISTNO) DESC;";
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
           } else if (userInput.equals("2")) { // Bookings by City, PC
-            System.out.print("Enter a city: ");
-            String city = sc.nextLine();
-            System.out.print("Enter a postal code (5 digits): ");
-            String postalCode = sc.nextLine();
-            sql = "SELECT COUNT(LISTNO) FROM BOOKING NATURAL JOIN LISTINGS WHERE CITY = '" + city
-                + "' AND POSTAL = '" + postalCode + "';";
+            System.out.print("Enter a start date (YYYY-MM-DD): ");
+            String dates = sc.nextLine();
+            System.out.print("Enter an end date (YYYY-MM-DD): ");
+            String datee = sc.nextLine();
+            sql = "SELECT CITY, POSTAL, COUNT(LISTNO) FROM BOOKING NATURAL JOIN LISTINGS "
+                + " WHERE DATE_START >= '" + dates + "' and DATE_END <= '" + datee + "'"
+                + " GROUP BY POSTAL, CITY, COUNTRY ORDER BY COUNt(LISTNO) DESC;";
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
           } else if (userInput.equals("3")) { // Listings by country
@@ -244,60 +249,60 @@ public class bnbGUI {
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
           } else if (userInput.equals("4")) { // Listings by country, city
-            sql = "select city, country, count(listno) from listings group by country, city";
+            sql = "select country, city, count(listno) from listings "
+                + "group by country, city order by country asc, count(listno) desc, city asc";
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
           } else if (userInput.equals("5")) { // Total listings by country, city, PC
-            sql = "select postal, city, country, count(listno) from listings group by country, "
-                + "city, postal";
+            sql = "select country, city, postal, count(listno) from listings "
+                + " group by country, city, postal "
+                + " order by country asc, city asc, count(listno) desc, postal asc";
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
           } else if (userInput.equals("6")) { // Host rank by country
-            System.out.print("Enter a country: ");
-            String country = sc.nextLine();
-            sql = "select uname, ownership.SIN, count(ownership.sin), country "
-                + "from listings JOIN OWNERSHIP JOIN User where country = '" + country
-                + "' AND listings.listno = ownership.listno AND user.sin = ownership.sin "
-                + "GROUP BY country, ownership.sin ORDER BY COUNT(ownership.sin) DESC";
+            System.out.println("Host rank by country: ");
+            // ownership.sin in select statement is optional
+            sql = "select country, uname, count(ownership.sin) "
+                + " from listings JOIN OWNERSHIP JOIN User "
+                + " where listings.listno = ownership.listno AND user.sin = ownership.sin "
+                + " GROUP BY country, ownership.sin "
+                + " ORDER BY country ASC, COUNT(ownership.sin) DESC";
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
           } else if (userInput.equals("7")) { // Host rank by city
-            System.out.print("Enter a country: ");
-            String country = sc.nextLine();
-            System.out.print("Enter a city: ");
-            String city = sc.nextLine();
-            sql = "select uname, ownership.SIN, count(ownership.sin), city, country "
-                + "from listings JOIN OWNERSHIP JOIN User where country = '" + country
-                + "' AND city = '" + city
-                + "' AND listings.listno = ownership.listno AND user.sin = ownership.sin "
-                + "GROUP BY country, ownership.sin, city ORDER BY COUNT(ownership.sin) DESC";
+            System.out.println("Host rank by city, country: ");
+            // ownership.sin in select statement is optional
+            sql = "select country, city, uname, count(ownership.sin)"
+                + " from listings JOIN OWNERSHIP JOIN User "
+                + " where listings.listno = ownership.listno AND user.sin = ownership.sin "
+                + " GROUP BY city, country, ownership.sin "
+                + " ORDER BY country ASC, city ASC, COUNT(ownership.sin) DESC";
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
           } else if (userInput.equals("8")) { // Hosts with >10% by city & country
-            System.out.print("Enter a country: ");
-            String country = sc.nextLine();
-            System.out.print("Enter a city: ");
-            String city = sc.nextLine();
-            sql = "select uname, ownership.SIN, count(ownership.sin), city, country"
-                + " from listings JOIN OWNERSHIP JOIN User WHERE country = '" + country
-                + "' AND CITY like '" + city + "' "
-                + " AND listings.listno = ownership.listno AND user.sin = ownership.sin"
-                + " GROUP BY ownership.sin, country HAVING (10 * COUNT(ownership.sin) > ("
-                + " select count(listno) from listings b natural JOIN ownership c "
-                + " WHERE country like '" + country + "' AND CITY like '" + city
-                + "' group by b.country)) ORDER BY COUNT(ownership.sin) DESC;";
+            System.out.println("Hosts with >10% share in a cities: ");
+            // ownership.sin in select statement is optional
+            sql = "Select country, city, uname, count(ownership.sin)"
+                + " from listings JOIN OWNERSHIP JOIN User"
+                + " where listings.listno = ownership.listno AND user.sin = ownership.sin "
+                + " GROUP BY country, city, ownership.sin "
+                + " HAVING (10 * COUNT(ownership.sin) > (select count(c.sin) "
+                + " from listings b natural JOIN ownership c "
+                + " where listings.country = b.country and listings.city = b.city "
+                + " group by b.country))"
+                + " ORDER BY COUNTRY ASC, CITY ASC, COUNT(ownership.sin) DESC;";
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
           } else if (userInput.equals("9")) { // Hosts with >10% by country
-            System.out.print("Enter a country: ");
-            String country = sc.nextLine();
-            sql = "select uname, ownership.SIN, count(ownership.sin), country"
-                + " from listings JOIN OWNERSHIP JOIN User WHERE country like '" + country
-                + "' AND listings.listno = ownership.listno AND user.sin = ownership.sin"
-                + " GROUP BY ownership.sin, country" + " HAVING (10 * COUNT(ownership.sin) > ("
-                + "select count(listno) from listings b natural JOIN ownership c "
-                + " WHERE country like '" + country + "' group by b.country))"
-                + " ORDER BY COUNT(ownership.sin) DESC;";
+            System.out.println("Hosts with >10% share in a countries: ");
+            sql = "Select country, uname, ownership.SIN, count(ownership.sin)"
+                + " from listings JOIN OWNERSHIP JOIN User"
+                + " where listings.listno = ownership.listno AND user.sin = ownership.sin "
+                + " GROUP BY country, ownership.sin "
+                + " HAVING (10 * COUNT(ownership.sin) > (select count(c.sin) "
+                + " from listings b natural JOIN ownership c "
+                + " where listings.country = b.country group by b.country))"
+                + " ORDER BY COUNTRY ASC, COUNT(ownership.sin) DESC;";
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
           } else if (userInput.equals("10")) { // Renter number of bookings
@@ -305,7 +310,8 @@ public class bnbGUI {
             String start = sc.nextLine();
             System.out.print("Enter an end date (YYYY-MM-DD): ");
             String end = sc.nextLine();
-            sql = "select uname, renter.sin, count(renter.sin)"
+            // renter.sin in select statement is optional
+            sql = "select uname, count(renter.sin)"
                 + " from renter join booking on renter.sin = booking.rentersin"
                 + " join user on renter.sin = user.sin" + " where date_start >= '" + start
                 + "' and date_end <= '" + end + "'"
@@ -317,14 +323,14 @@ public class bnbGUI {
             String start = sc.nextLine();
             System.out.print("Enter an end date (YYYY-MM-DD): ");
             String end = sc.nextLine();
-            System.out.print("Enter the city: ");
-            String city = sc.nextLine();
-            sql = "select uname, renter.sin, count(renter.sin), city "
+            // renter.sin in select statement is optional
+            sql = "select city, uname, count(renter.sin)"
                 + " from listings join booking on booking.listno = listings.listno "
                 + " join renter on renter.sin = booking.rentersin join user "
-                + "on renter.sin = user.SIN where date_start >= '" + start + "' and date_end <= '"
-                + end + "' and city = '" + city + "' " + "group by renter.sin "
-                + "having (count(renter.sin) >= 2)  " + " order by count(renter.sin) DESC;";
+                + " on renter.sin = user.SIN where date_start >= '" + start + "' and date_end <= '"
+                + end + "' " + "group by renter.sin, city, country "
+                + " having (count(renter.sin) >= 2) "
+                + " order by country, city, count(renter.sin) DESC;";
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
           } else if (userInput.equals("12")) { // Most Cancels in Bookings (renters)
@@ -390,7 +396,7 @@ public class bnbGUI {
             System.out.println(outputRS(rs));
           } else if (userInput.equals("2")) { // USERS
             System.out.println("Format: SIN, name, job, address, birthdate");
-            sql = "SELECT * FROM USERS;";
+            sql = "SELECT * FROM USER;";
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
           } else if (userInput.equals("3")) { // Reviews
@@ -399,7 +405,7 @@ public class bnbGUI {
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
           } else if (userInput.equals("4")) { // Calendar
-            System.out.println("Format: Listing #, Owner SIN, Start, End, Price");
+            System.out.println("Format: Listing #, Start, End, Price");
             sql = "SELECT * FROM CALENDAR;";
             rs = stmt.executeQuery(sql);
             System.out.println(outputRS(rs));
@@ -517,8 +523,8 @@ public class bnbGUI {
             }
             // Pythagoras theorem for radius of a circle with a queried column of Radius^2
             sql = "SELECT listno, housetype,longtitude,latitude, address, postal, city, country, "
-                + "date_start, date_end, price, (POWER(LONGTITUDE - " + tempLong
-                + ",2) + POWER(LATITUDE - " + tempLat + ",2)) as 'Distance'"
+                + "date_start, date_end, price, (SQRT(POWER(LONGTITUDE - " + tempLong
+                + ",2) + POWER(LATITUDE - " + tempLat + ",2))) as 'Distance'"
                 + " FROM AMENITIES NATURAL JOIN LISTINGS " + "NATURAL join CALENDAR WHERE +"
                 + "(POWER(LONGTITUDE - " + tempLong + ",2) + POWER(LATITUDE - " + tempLat
                 + ",2) <= POWER(" + radius + ", 2)) " + filters + " ORDER BY Distance " + vAsc
